@@ -1,0 +1,40 @@
+{
+  "name": "vite-project-new",
+  "version": "0.1.0-alpha.0",
+  "private": false,
+  "type": "module",
+  "main": "./dist/index.umd.js",
+  "module": "./dist/index.es.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.es.js",
+      "require": "./dist/index.umd.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --fix",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "element-plus": "^2.9.5",
+    "vue": "^3.5.13"
+  },
+  "dependencies": {
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vitejs/plugin-vue-jsx": "^4.1.1",
+    "@vue/test-utils": "^2.4.6",
+    "element-plus": "^2.9.5",
+    "jsdom": "^29.0.1",
+    "vite": "^6.1.0",
+    "vitest": "^4.1.2"
+  }
+}

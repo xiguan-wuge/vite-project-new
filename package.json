@@ -1,69 +1,41 @@
 {
-  "name": "vite-project-new",
-  "version": "0.1.0-alpha.0",
-  "type": "module",
-  "main": "./dist/index.umd.js",
-  "module": "./dist/index.es.js",
-  "exports": {
-    ".": {
-      "import": "./dist/index.es.js",
-      "require": "./dist/index.umd.js"
-    }
-  },
-  "files": [
-    "dist"
-  ],
+  "name": "vite-project-monorepo",
+  "private": true,
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "lint": "eslint . --fix",
-    "format": "prettier --write src/",
-    "test": "vitest run",
+    "dev": "pnpm -r run dev",
+    "build": "pnpm -r run build",
+    "lint": "pnpm -r run lint",
+    "format": "prettier --write \"packages/**/*.{js,vue,jsx,ts,tsx}\"",
+    "test": "pnpm -r run test",
     "prepare": "husky",
-    "cz": "cz",
-    "release": "release-it"
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "pnpm build && changeset publish"
   },
   "config": {
     "commitizen": {
       "path": "cz-conventional-changelog"
     }
   },
-  "peerDependencies": {
-    "element-plus": "^2.9.5",
-    "vue": "^3.5.13"
-  },
-  "dependencies": {
-    "vue": "^3.5.13"
-  },
   "devDependencies": {
     "@babel/eslint-parser": "^7.28.6",
     "@babel/plugin-transform-react-jsx": "^7.28.6",
+    "@changesets/cli": "^2.28.1",
     "@commitlint/cli": "^20.5.0",
     "@commitlint/config-conventional": "^20.5.0",
-    "@release-it/conventional-changelog": "^10.0.6",
     "@rushstack/eslint-patch": "^1.16.1",
     "@types/node": "^25.5.0",
-    "@vitejs/plugin-vue": "^5.2.1",
-    "@vitejs/plugin-vue-jsx": "^4.1.1",
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/eslint-config-typescript": "^14.7.0",
-    "@vue/test-utils": "^2.4.6",
-    "@vue/tsconfig": "^0.9.1",
     "commitizen": "^4.3.1",
     "cz-conventional-changelog": "^3.3.0",
-    "element-plus": "^2.9.5",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
     "eslint-plugin-vue": "^10.8.0",
     "husky": "^9.1.7",
-    "jsdom": "^29.0.1",
     "prettier": "^3.8.1",
-    "release-it": "^19.2.4",
     "typescript": "^6.0.2",
-    "vite": "^6.1.0",
-    "vitest": "^4.1.2",
     "vue-eslint-parser": "^10.4.0"
   }
 }
