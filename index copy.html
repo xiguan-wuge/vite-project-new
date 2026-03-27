@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vite Library Demo</title>
+  <!-- 引入打包后的 CSS -->
+  <link rel="stylesheet" href="./vite-project-new.css">
+</head>
+<body>
+  <div id="app">
+    <HelloWorld msg="库模式构建测试"></HelloWorld>
+  </div>
+
+  <!-- 使用 ES Module 方式引入 -->
+  <script type="module">
+    // 从 CDN 引入 Vue 和 Element Plus（因为它们被配置为外部依赖）
+    import { createApp } from 'https://esm.sh/vue@3.4.0'
+    import ElementPlus from 'https://esm.sh/element-plus@2.5.0'
+
+    // 引入打包后的库
+    import ViteProjectNew from './index.es.js'
+
+    const app = createApp('#app')
+
+    // 注册为插件
+    app.use(ViteProjectNew)
+    app.use(ElementPlus)
+
+    app.mount('#app')
+  </script>
+</body>
+</html>
