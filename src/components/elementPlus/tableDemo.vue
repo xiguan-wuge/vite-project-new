@@ -35,7 +35,7 @@ export default {
             prop="name"
             label="Name"
             v-slots={{
-              default: ({ row }) => <el-tag type="success">{row.name}</el-tag>
+              default: (scope) => <el-tag type="success">{scope?.row?.name}</el-tag>
             }}
           />
         

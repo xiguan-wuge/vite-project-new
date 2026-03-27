@@ -4,13 +4,14 @@
   },
   "git": {
     "commitMessage": "chore: release v${version}",
-    "tagName": "v${version}"
+    "tagName": "v${version}",
+    "requireCleanWorkingDir": false
   },
   "npm": {
     "publish": false
   },
   "hooks": {
-    "before:init": ["pnpm run build"]
+    "before:init": ["pnpm run lint", "pnpm run test", "pnpm run build"]
   },
   "plugins": {
     "@release-it/conventional-changelog": {

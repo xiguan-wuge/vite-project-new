@@ -9,6 +9,10 @@ export default defineConfig({
     vue(),
     vueJsx() // 启用 JSX 支持
   ],
+  test: {
+    globals: true,
+    environment: 'jsdom'
+  },
   build: {
     lib: {
       // 库的入口文件
