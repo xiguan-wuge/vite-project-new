@@ -41,3 +41,55 @@
 3. **配置 Commitlint**：采用 `@commitlint/config-conventional` 预设。
 4. **配置 release-it**：创建 `.release-it.json`，定义打包与发布的规则。
 5. **权限配置**：确保本地环境已登录 NPM 账号。
+
+---
+
+## 五、 操作指南 (Operation Guide)
+
+### 1. 日常开发与提交代码
+为了确保提交记录符合规范并能自动生成日志，请遵循以下方式：
+
+- **推荐方式：交互式提交**
+  执行 `git add .` 后，运行：
+  ```bash
+  pnpm cz
+  ```
+  按照终端提示选择提交类型（feat, fix 等）并填写描述。
+
+- **手动提交规范**
+  格式：`<type>(<scope>): <subject>`
+  - 例子：`feat: 增加用户登录功能`
+  - 例子：`fix(table): 修复分页显示异常`
+
+### 2. 发布新版本 (Versioning & Changelog)
+当你准备发布一个正式版本（如从 0.0.0 升级到 0.1.0）时：
+
+1. **执行发布命令**：
+   ```bash
+   pnpm release
+   ```
+2. **自动化流程**：工具会自动执行以下动作：
+   - **自动打包**：运行 `pnpm run build`。
+   - **选择版本**：询问升级 Patch (0.0.1), Minor (0.1.0) 或 Major (1.0.0)。
+   - **生成日志**：根据提交记录自动更新 `CHANGELOG.md`。
+   - **Git 动作**：自动执行 Git Add, Commit 并打上 Tag。
+
+### 3. 发布预发布版本 (Alpha/Beta)
+如果你想发布一个测试版本（例如 1.0.0-alpha.0）：
+
+- **发布 Alpha 版**：
+  ```bash
+  pnpm release --preRelease=alpha
+  ```
+- **发布 Beta 版**：
+  ```bash
+  pnpm release --preRelease=beta
+  ```
+
+---
+
+## 六、 常见问题 (FAQ)
+
+- **提交报错**：如果看到 `husky - commit-msg hook failed`，说明提交信息不符合规范，请检查前缀是否正确。
+- **查看日志**：发布后根目录会自动生成或更新 `CHANGELOG.md`，记录了每个版本的变更明细。
+- **NPM 发布**：默认配置中 `npm publish` 是关闭的（见 `.release-it.json`），如需开启请修改为 `"publish": true`。
