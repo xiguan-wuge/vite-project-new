@@ -8,6 +8,7 @@
     "format": "prettier --write \"packages/**/*.{js,vue,jsx,ts,tsx}\"",
     "test": "pnpm -r run test",
     "prepare": "husky",
+    "cz": "cz",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "pnpm build && changeset publish"
