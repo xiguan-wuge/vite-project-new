@@ -106,3 +106,8 @@ a:hover {
   display: table;
   clear: both;
 }
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
