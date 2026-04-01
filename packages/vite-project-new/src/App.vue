@@ -15,6 +15,9 @@ import HelloWorld from './components/HelloWorld.vue'
   will-change: filter;
   transition: filter 300ms;
 }
+/**
+ * Vue logo悬停样式
+ */
 .logo:hover {
   filter: drop-shadow(0 0 2em #2028ccaa);
 }
