@@ -1,5 +1,14 @@
 # vite-project-new
 
+## 0.3.0
+
+### Minor Changes
+
+- feat(monorepo): 通过pnpm workspace 和 changesets，将项目改造成monorepo (2eefc86)
+- feat: 多包管理commit 自动生成changelog (325191d)
+- feat(app): logo样式修改 (8ab4046)
+- feat(component): 入口页面优化 (bb22174)
+
 ## 0.2.0
 
 ### Minor Changes
