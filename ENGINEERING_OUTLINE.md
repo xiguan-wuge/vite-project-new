@@ -52,21 +52,39 @@
   项目集成了自动化检测脚本。你**不需要**再手动运行 `pnpm changeset`，发布脚本会自动扫描 Git Commit 并分发到各子包。
 
 ### 3. 发布新版本流程 (关键)
-1. **执行版本更新**：
+
+1. **合并代码**：确保所有变更已合并到主分支。
+2. **自动化生成变更并更新版本**：
    ```bash
    pnpm version-packages
    ```
-   这会执行以下自动化动作：
-   - 自动运行 `pnpm gen-changeset`：扫描自上次发布以来的 Git Commit，根据修改的文件路径自动为子包生成 `.changeset/*.md` 文件。
-   - 自动运行 `changeset version`：消耗这些记录，更新各子包的 `package.json` 版本并生成细粒度的 `CHANGELOG.md`。
-2. **提交版本更新**：
+   - **自动化逻辑**：该命令会运行 `pnpm gen-changeset`，它根据自上次 Tag 以来修改的文件路径，自动识别受影响的子包，并提取 Commit 中的 `type` (feat/fix) 和 `scope` 生成变更记录。
+   - **格式化增强**：会自动为 `CHANGELOG.md` 注入发布日期、Commit 哈希链接，并按 `Features`、`Bug fixes` 等类型分组展示。
+3. **手动干预版本（可选）**：
+   - 如果你想手动选择版本提升类型（Major/Minor/Patch），请运行：
+     ```bash
+     pnpm changeset
+     ```
+4. **发布先行版本 (Alpha/Beta/RC)**：
+   - 进入预发布模式：`pnpm changeset pre enter alpha`
+   - 正常运行 `pnpm version-packages` 更新版本（如 `1.0.0-alpha.0`）
+   - 退出预发布模式：`pnpm changeset pre exit`
+5. **提交版本更新并打标签**：
    ```bash
    git add .
    git commit -m "chore: version packages"
-   git push
+   pnpm tag
    ```
-3. **执行发布**：
-   运行 `pnpm release` 触发构建并发布到 NPM。
+   - **pnpm tag**：会执行 `pnpm build` 并根据当前包版本生成本地 Git Tag，但不执行发布动作。
+6. **推送到远端**：
+   ```bash
+   git push --follow-tags
+   ```
+7. **执行正式发布 (按需)**：
+   如果你需要将包发布到 NPM 仓库，请执行：
+   ```bash
+   pnpm release
+   ```
 
 ---
 

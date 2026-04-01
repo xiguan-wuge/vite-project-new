@@ -11,7 +11,8 @@
     "cz": "cz",
     "gen-changeset": "node scripts/auto-changeset.mjs",
     "changeset": "changeset",
-    "version-packages": "pnpm gen-changeset && changeset version",
+    "version-packages": "pnpm gen-changeset && changeset version && node scripts/post-version.mjs",
+    "tag": "pnpm build && changeset tag",
     "release": "pnpm build && changeset publish"
   },
   "config": {

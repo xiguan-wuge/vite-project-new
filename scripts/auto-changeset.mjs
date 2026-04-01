@@ -14,6 +14,11 @@ import path from 'path';
 const PKG_PREFIX = '@vite-project-new/';
 const CHANGESET_DIR = '.changeset';
 
+// 解析命令行参数
+const args = process.argv.slice(2);
+const filterIndex = args.indexOf('--filter');
+const filterPkgDir = filterIndex !== -1 ? args[filterIndex + 1] : null;
+
 // 获取所有子包及其目录
 function getPackages() {
   const packagesDir = 'packages';
@@ -68,8 +73,20 @@ function parseCommit(msg) {
 // 主逻辑
 function run() {
   const packages = getPackages();
+  
+  // 如果指定了过滤器，筛选目标包
+  const targetPackages = filterPkgDir 
+    ? packages.filter(p => p.dir.endsWith(filterPkgDir))
+    : packages;
+
+  if (filterPkgDir && targetPackages.length === 0) {
+    console.error(`> 错误: 未找到目录名为 "${filterPkgDir}" 的包。`);
+    process.exit(1);
+  }
+
   const lastTag = getLastTag();
   console.log(`> 上一次发布的 Tag: ${lastTag}`);
+  if (filterPkgDir) console.log(`> 已启用过滤：仅针对包 "${targetPackages[0].name}"`);
 
   const commits = getCommitsSince(lastTag);
   if (commits.length === 0) {
@@ -115,7 +132,7 @@ function run() {
     const affectedPkgs = new Set();
 
     modifiedFiles.forEach(file => {
-      packages.forEach(pkg => {
+      targetPackages.forEach(pkg => { // 使用筛选后的包列表
         if (file.startsWith(pkg.dir + path.sep) || file === pkg.dir) {
           affectedPkgs.add(pkg.name);
         }
@@ -123,7 +140,7 @@ function run() {
     });
 
     if (affectedPkgs.size === 0) {
-      console.log(`- 提交 ${shortHash} 未涉及任何子包的修改，跳过。`);
+      // 如果没有受影响的包（可能是被 filter 掉了，也可能是真的没改子包）
       return;
     }
 
@@ -136,9 +153,10 @@ function run() {
     });
     changesetContent += '---\n\n';
     
-    // 细粒度展示：如果有 scope，则显示为 "type(scope): summary"，否则显示为 "type: summary"
-    const displayScope = parsed.scope ? `(${parsed.scope})` : '';
-    changesetContent += `${parsed.type}${displayScope}: ${parsed.summary} (${shortHash})\n`;
+    // 结构化存储：type | scope | summary | hash
+    // 这样自定义 format 脚本可以轻松解析
+    const scope = parsed.scope || '';
+    changesetContent += `${parsed.type} | ${scope} | ${parsed.summary} | ${shortHash}\n`;
 
     const changesetPath = path.join(CHANGESET_DIR, `auto-${shortHash}.md`);
     fs.writeFileSync(changesetPath, changesetContent);
@@ -147,7 +165,6 @@ function run() {
   });
 
   console.log(`\n> 完成！成功生成 ${count} 个 Changeset 文件。`);
-  console.log('> 请运行 `pnpm version-packages` 来消耗这些变更并更新版本和 Changelog。');
 }
 
 run();
