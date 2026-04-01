@@ -86,7 +86,9 @@ a:hover {
 .text-center {
   text-align: center;
 }
-
+/**
+ * 左对齐文本
+ */
 .text-left {
   text-align: left;
 }
