@@ -9,8 +9,9 @@
     "test": "pnpm -r run test",
     "prepare": "husky",
     "cz": "cz",
+    "gen-changeset": "node scripts/auto-changeset.mjs",
     "changeset": "changeset",
-    "version-packages": "changeset version",
+    "version-packages": "pnpm gen-changeset && changeset version",
     "release": "pnpm build && changeset publish"
   },
   "config": {

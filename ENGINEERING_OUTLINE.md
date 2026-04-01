@@ -46,29 +46,27 @@
 - **运行测试**：`pnpm run test` (执行所有子包测试)
 
 ### 2. 日常开发与提交代码
-- **常规提交**：遵循 Angular 规范，或者使用 `pnpm cz`。
-- **记录变更 (Changeset)**：
-  如果你修改了某个子包的代码并希望在下次发布时体现，请运行：
-  ```bash
-  pnpm changeset
-  ```
-  按照提示选择修改的包、版本类型（patch/minor/major）以及变更描述。这将生成一个临时文件记录变更。
+- **常规提交**：使用 `pnpm cz` 按照交互式引导生成规范的提交信息。
+- **作用域支持**：支持细粒度的作用域（如 `feat(button): ...`），这些信息将直接体现到子包的 Changelog 中。
+- **自动记录变更 (Changeset)**：
+  项目集成了自动化检测脚本。你**不需要**再手动运行 `pnpm changeset`，发布脚本会自动扫描 Git Commit 并分发到各子包。
 
 ### 3. 发布新版本流程 (关键)
-1. **合并代码**：确保所有变更已记录在 changeset 中并合并到主分支。
-2. **消耗变更并更新版本**：
+1. **执行版本更新**：
    ```bash
    pnpm version-packages
    ```
-   这会删除 changeset 临时文件，更新对应子包的 `package.json` 版本并生成 `CHANGELOG.md`。
-3. **提交版本更新**：
+   这会执行以下自动化动作：
+   - 自动运行 `pnpm gen-changeset`：扫描自上次发布以来的 Git Commit，根据修改的文件路径自动为子包生成 `.changeset/*.md` 文件。
+   - 自动运行 `changeset version`：消耗这些记录，更新各子包的 `package.json` 版本并生成细粒度的 `CHANGELOG.md`。
+2. **提交版本更新**：
    ```bash
    git add .
    git commit -m "chore: version packages"
    git push
    ```
-4. **执行发布 (手动或通过 CI)**：
-   运行 `pnpm release` 或推送到远端由 CI 自动完成发布。
+3. **执行发布**：
+   运行 `pnpm release` 触发构建并发布到 NPM。
 
 ---
 
