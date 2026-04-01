@@ -92,7 +92,9 @@ a:hover {
 .text-left {
   text-align: left;
 }
-
+/**
+ * 右对齐文本
+ */
 .text-right {
   text-align: right;
 }
