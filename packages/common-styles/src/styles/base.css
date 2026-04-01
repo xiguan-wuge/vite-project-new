@@ -106,7 +106,12 @@ a:hover {
 .invisible {
   visibility: hidden;
 }
-
+/**
+ * 清除浮动
+ */
+.clearfix {
+  zoom: 1;
+}
 .clearfix::after {
   content: '';
   display: table;
