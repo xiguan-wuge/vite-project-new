@@ -74,7 +74,9 @@ a {
   text-decoration: none;
   transition: color 0.2s ease;
 }
-
+/**
+ * 链接悬停样式
+ */
 a:hover {
   color: var(--color-primary);
   text-decoration: underline;
