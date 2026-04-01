@@ -19,7 +19,7 @@ import HelloWorld from './components/HelloWorld.vue'
   filter: drop-shadow(0 0 2em #2028ccaa);
 }
 /**
- * Vue logo悬停样式
+ * Vue logo悬停样式  vue
  */
 .logo.vue:hover {
   filter: drop-shadow(0 0 2em #1f905daa);
