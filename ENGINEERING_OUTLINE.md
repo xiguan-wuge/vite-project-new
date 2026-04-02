@@ -66,10 +66,16 @@
      pnpm changeset
      ```
 4. **发布先行版本 (Alpha/Beta/RC)**：
-   - 进入预发布模式：`pnpm changeset pre enter alpha`
-   - 正常运行 `pnpm version-packages` 更新版本（如 `1.0.0-alpha.0`）
-   - 退出预发布模式：`pnpm changeset pre exit`
-5. **提交版本更新并打标签**：
+    - 进入预发布模式：`pnpm changeset pre enter alpha`
+    - 正常运行 `pnpm version-packages` 更新版本（如 `1.0.0-alpha.0`）
+    - 退出预发布模式：`pnpm changeset pre exit`
+ 5. **仅发布单个子包（按需）**：
+    如果你只想更新并发布其中一个包，可以跳过全局的 `pnpm version-packages`，手动执行以下步骤：
+    - **生成目标包记录**：`pnpm gen-changeset -- --filter <pkg-dir>`（例如 `common-styles`）
+    - **更新版本与日志**：`pnpm changeset version && node scripts/post-version.mjs`
+    - **仅构建目标包**：`pnpm --filter <pkg-name> run build`（例如 `@vite-project-new/common-styles`）
+    - **生成该包的 Tag**：`pnpm changeset tag`
+ 6. **提交版本更新并打标签**：
    ```bash
    git add .
    git commit -m "chore: version packages"

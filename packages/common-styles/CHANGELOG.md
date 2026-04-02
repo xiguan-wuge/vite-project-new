@@ -1,6 +1,22 @@
 # @vite-project-new/common-styles
 
-### 2.4.0
+### 2.5.0
+
+_2026-04-01_
+
+#### Features
+
+- [base] 左对齐样式 ([bb8a997](https://github.com/xiguan-wuge/vite-project-new/commit/bb8a997))
+
+- 右对齐样式 ([dc53d5f](https://github.com/xiguan-wuge/vite-project-new/commit/dc53d5f))
+
+- [base] 添加清除浮动说明 ([dc88e72](https://github.com/xiguan-wuge/vite-project-new/commit/dc88e72))
+
+#### Bug fixes
+
+- [base] 左对齐说明修改 ([523cf58](https://github.com/xiguan-wuge/vite-project-new/commit/523cf58))
+
+#### 2.4.0
 
 _2026-04-01_
 
