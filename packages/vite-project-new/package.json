@@ -19,7 +19,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --fix",
-    "test": "vitest run"
+    "test": "vitest run",
+    "version-pkg": "node ../../scripts/auto-changeset.mjs --filter vite-project-new && pnpm --filter root version-only"
   },
   "peerDependencies": {
     "element-plus": "^2.9.5",

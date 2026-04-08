@@ -19,36 +19,30 @@ const args = process.argv.slice(2);
 const filterIndex = args.indexOf('--filter');
 const filterPkgDir = filterIndex !== -1 ? args[filterIndex + 1] : null;
 
-// 获取所有子包及其目录
-function getPackages() {
-  const packagesDir = 'packages';
-  if (!fs.existsSync(packagesDir)) return [];
-  return fs.readdirSync(packagesDir).map(dir => {
-    const pkgJsonPath = path.join(packagesDir, dir, 'package.json');
-    if (fs.existsSync(pkgJsonPath)) {
-      const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf-8'));
-      return {
-        name: pkgJson.name,
-        dir: path.join(packagesDir, dir)
-      };
-    }
-    return null;
-  }).filter(Boolean);
-}
+// 解析版本提升级别
+const bumpIndex = args.indexOf('--bump');
+const forceBumpType = bumpIndex !== -1 ? args[bumpIndex + 1] : null;
 
-// 获取上一个 Tag
-function getLastTag() {
+// 获取子包的上一个 Tag (changeset 格式通常为 pkg-name@version)
+function getLastTag(pkgName) {
   try {
-    return execSync('git describe --tags --abbrev=0').toString().trim();
+    // 优先匹配该包自己的 tag
+    return execSync(`git describe --tags --abbrev=0 --match "${pkgName}@*"`).toString().trim();
   } catch (e) {
-    // 如果没有 Tag，则获取第一个 Commit
-    return execSync('git rev-list --max-parents=0 HEAD').toString().trim();
+    try {
+      // 如果没有包自己的 tag，则获取全局最新的 tag
+      return execSync('git describe --tags --abbrev=0').toString().trim();
+    } catch (e) {
+      // 如果都没有，则获取第一个 Commit
+      return execSync('git rev-list --max-parents=0 HEAD').toString().trim();
+    }
   }
 }
 
-// 获取 Commit 列表
-function getCommitsSince(tag) {
-  const logs = execSync(`git log ${tag}..HEAD --pretty=format:"%H|%s"`).toString().trim();
+// 获取 Commit 列表，限制在特定路径下
+function getCommitsSince(tag, pkgPath) {
+  const pathFilter = pkgPath ? `-- ${pkgPath}` : '';
+  const logs = execSync(`git log ${tag}..HEAD --pretty=format:"%H|%s" ${pathFilter}`).toString().trim();
   if (!logs) return [];
   return logs.split('\n').map(line => {
     const [hash, msg] = line.split('|');
@@ -70,31 +64,67 @@ function parseCommit(msg) {
   return { type, scope, summary };
 }
 
+// 获取所有子包及其目录
+function getPackages() {
+  const packagesDir = 'packages';
+  if (!fs.existsSync(packagesDir)) return [];
+  return fs.readdirSync(packagesDir).map(dir => {
+    const pkgJsonPath = path.join(packagesDir, dir, 'package.json');
+    if (fs.existsSync(pkgJsonPath)) {
+      const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf-8'));
+      return {
+        name: pkgJson.name,
+        dir: path.join(packagesDir, dir),
+        dirName: dir
+      };
+    }
+    return null;
+  }).filter(Boolean);
+}
+
 // 主逻辑
 function run() {
-  const packages = getPackages();
+  const allPackages = getPackages();
   
   // 如果指定了过滤器，筛选目标包
   const targetPackages = filterPkgDir 
-    ? packages.filter(p => p.dir.endsWith(filterPkgDir))
-    : packages;
+    ? allPackages.filter(p => p.dirName === filterPkgDir)
+    : allPackages;
 
   if (filterPkgDir && targetPackages.length === 0) {
     console.error(`> 错误: 未找到目录名为 "${filterPkgDir}" 的包。`);
     process.exit(1);
   }
 
-  const lastTag = getLastTag();
-  console.log(`> 上一次发布的 Tag: ${lastTag}`);
-  if (filterPkgDir) console.log(`> 已启用过滤：仅针对包 "${targetPackages[0].name}"`);
+  if (filterPkgDir) {
+    console.log(`> 已启用过滤：仅针对包 "${targetPackages[0].name}"`);
+    if (forceBumpType) console.log(`> 已强制指定版本提升类型: ${forceBumpType}`);
+  }
 
-  const commits = getCommitsSince(lastTag);
-  if (commits.length === 0) {
+  // 1. 为每个目标包获取其自上次发布以来的所有相关 Commit
+  const commitMap = new Map(); // hash -> { hash, msg, affectedPkgs: Set }
+
+  targetPackages.forEach(pkg => {
+    const lastTag = getLastTag(pkg.name);
+    console.log(`- 包 ${pkg.name} 的上一次 Tag: ${lastTag}`);
+    
+    const pkgCommits = getCommitsSince(lastTag, pkg.dir);
+    pkgCommits.forEach(({ hash, msg }) => {
+      if (!commitMap.has(hash)) {
+        commitMap.set(hash, { hash, msg, affectedPkgs: new Set() });
+      }
+      commitMap.get(hash).affectedPkgs.add(pkg.name);
+    });
+  });
+
+  const uniqueCommits = Array.from(commitMap.values());
+
+  if (uniqueCommits.length === 0) {
     console.log('> 没有发现新的提交。');
     return;
   }
 
-  console.log(`> 发现 ${commits.length} 个新提交，开始自动生成 Changeset...`);
+  console.log(`> 发现 ${uniqueCommits.length} 个相关提交，开始自动生成 Changeset...`);
 
   // 获取现有的 changeset 文件中的 commit hash，避免重复生成
   const existingHashes = new Set();
@@ -109,7 +139,7 @@ function run() {
   }
 
   let count = 0;
-  commits.forEach(({ hash, msg }) => {
+  uniqueCommits.forEach(({ hash, msg, affectedPkgs }) => {
     const shortHash = hash.substring(0, 7);
     if (existingHashes.has(shortHash)) {
       console.log(`- 提交 ${shortHash} 已存在对应的 Changeset，跳过。`);
@@ -128,33 +158,32 @@ function run() {
       return;
     }
 
+    // 再次确认受影响的包（主要是为了排除掉那些虽然在 targetPackages 中，但实际上此 commit 没改它的包）
+    // 虽然 getCommitsSince 已经带了路径过滤，但这里的 affectedPkgs 是针对 targetPackages 的
+    // 如果是 global 运行，这步是必须的
     const modifiedFiles = getModifiedFiles(hash);
-    const affectedPkgs = new Set();
+    const finalAffectedPkgs = new Set();
 
     modifiedFiles.forEach(file => {
-      targetPackages.forEach(pkg => { // 使用筛选后的包列表
+      targetPackages.forEach(pkg => {
         if (file.startsWith(pkg.dir + path.sep) || file === pkg.dir) {
-          affectedPkgs.add(pkg.name);
+          finalAffectedPkgs.add(pkg.name);
         }
       });
     });
 
-    if (affectedPkgs.size === 0) {
-      // 如果没有受影响的包（可能是被 filter 掉了，也可能是真的没改子包）
-      return;
-    }
+    if (finalAffectedPkgs.size === 0) return;
 
     // 生成 Changeset 内容
-    const bumpType = (msg.includes('BREAKING CHANGE') || parsed.type.includes('!')) ? 'major' : (parsed.type === 'feat' ? 'minor' : 'patch');
+    // 优先级：强制指定 > BREAKING CHANGE > feat (minor) > others (patch)
+    const bumpType = forceBumpType || ((msg.includes('BREAKING CHANGE') || parsed.type.includes('!')) ? 'major' : (parsed.type === 'feat' ? 'minor' : 'patch'));
     
     let changesetContent = '---\n';
-    affectedPkgs.forEach(pkgName => {
+    finalAffectedPkgs.forEach(pkgName => {
       changesetContent += `"${pkgName}": ${bumpType}\n`;
     });
     changesetContent += '---\n\n';
     
-    // 结构化存储：type | scope | summary | hash
-    // 这样自定义 format 脚本可以轻松解析
     const scope = parsed.scope || '';
     changesetContent += `${parsed.type} | ${scope} | ${parsed.summary} | ${shortHash}\n`;
 

@@ -8,7 +8,7 @@ _2026-04-01_
 
 - **[app]** 添加中文注释以说明.logo.vue:hover选择器的用途，提高代码可读性 ([da0309c](https://github.com/xiguan-wuge/vite-project-new/commit/da0309c))
 
-### 0.4.0
+#### 0.4.0
 
 _2026-04-01_
 
@@ -16,7 +16,9 @@ _2026-04-01_
 
 - feat(app): 添加中文注释以说明.logo.vue:hover选择器的用途，提高代码可读性 (da0309c)
 
-## 0.3.0
+### 0.3.0
+
+_2026-04-08_
 
 #### Features
 

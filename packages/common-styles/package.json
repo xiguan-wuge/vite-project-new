@@ -13,7 +13,8 @@
     "build": "vite build",
     "dev": "vite",
     "preview": "vite preview",
-    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix"
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
+    "version-pkg": "node ../../scripts/auto-changeset.mjs --filter common-styles && pnpm --filter root version-only"
   },
   "keywords": [
     "styles",
