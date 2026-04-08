@@ -9,6 +9,9 @@ import HelloWorld from './components/HelloWorld.vue'
 </template>
 
 <style scoped>
+/**
+ * Vue logo样式
+ */
 .logo {
   height: 6em;
   padding: 1.5em;
