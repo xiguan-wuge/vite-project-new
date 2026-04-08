@@ -27,6 +27,9 @@ const count = ref(0)
 </template>
 
 <style scoped>
+/**
+ * 读取文档样式
+ */
 .read-the-docs {
   color: #888;
 }
