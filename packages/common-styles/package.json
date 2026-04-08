@@ -1,6 +1,6 @@
 {
   "name": "@vite-project-new/common-styles",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "description": "Common styles collection for vite-project-new monorepo",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
