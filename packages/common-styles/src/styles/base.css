@@ -117,6 +117,9 @@ a:hover {
   display: table;
   clear: both;
 }
+/**
+ * 超出部分省略号显示
+ */
 .ellipsis {
   overflow: hidden;
   text-overflow: ellipsis;
