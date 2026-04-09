@@ -14,6 +14,17 @@ import path from 'path';
 const PKG_PREFIX = '@vite-project-new/';
 const CHANGESET_DIR = '.changeset';
 
+// 获取项目根目录 (支持从子包目录运行)
+function getRootDir() {
+  try {
+    return execSync('git rev-parse --show-toplevel').toString().trim();
+  } catch (e) {
+    return process.cwd();
+  }
+}
+
+const ROOT_DIR = getRootDir();
+
 // 解析命令行参数
 const args = process.argv.slice(2);
 const filterIndex = args.indexOf('--filter');
@@ -41,8 +52,11 @@ function getLastTag(pkgName) {
 
 // 获取 Commit 列表，限制在特定路径下
 function getCommitsSince(tag, pkgPath) {
-  const pathFilter = pkgPath ? `-- ${pkgPath}` : '';
-  const logs = execSync(`git log ${tag}..HEAD --pretty=format:"%H|%s" ${pathFilter}`).toString().trim();
+  const relativePkgPath = path.relative(ROOT_DIR, pkgPath);
+  const pathFilter = relativePkgPath ? `-- ${relativePkgPath}` : '';
+  const command = `git log ${tag}..HEAD --pretty=format:"%H|%s" ${pathFilter}`;
+  console.log(`- 执行命令: ${command}`);
+  const logs = execSync(command).toString().trim();
   if (!logs) return [];
   return logs.split('\n').map(line => {
     const [hash, msg] = line.split('|');
@@ -66,7 +80,7 @@ function parseCommit(msg) {
 
 // 获取所有子包及其目录
 function getPackages() {
-  const packagesDir = 'packages';
+  const packagesDir = path.join(ROOT_DIR, 'packages');
   if (!fs.existsSync(packagesDir)) return [];
   return fs.readdirSync(packagesDir).map(dir => {
     const pkgJsonPath = path.join(packagesDir, dir, 'package.json');
@@ -128,10 +142,11 @@ function run() {
 
   // 获取现有的 changeset 文件中的 commit hash，避免重复生成
   const existingHashes = new Set();
-  if (fs.existsSync(CHANGESET_DIR)) {
-    fs.readdirSync(CHANGESET_DIR).forEach(file => {
+  const changesetPathDir = path.join(ROOT_DIR, CHANGESET_DIR);
+  if (fs.existsSync(changesetPathDir)) {
+    fs.readdirSync(changesetPathDir).forEach(file => {
       if (file.endsWith('.md') && file !== 'README.md') {
-        const content = fs.readFileSync(path.join(CHANGESET_DIR, file), 'utf-8');
+        const content = fs.readFileSync(path.join(changesetPathDir, file), 'utf-8');
         const match = content.match(/\(([a-f0-9]{7,})\)$/);
         if (match) existingHashes.add(match[1]);
       }
@@ -158,15 +173,15 @@ function run() {
       return;
     }
 
-    // 再次确认受影响的包（主要是为了排除掉那些虽然在 targetPackages 中，但实际上此 commit 没改它的包）
-    // 虽然 getCommitsSince 已经带了路径过滤，但这里的 affectedPkgs 是针对 targetPackages 的
-    // 如果是 global 运行，这步是必须的
+    // 再次确认受影响的包
     const modifiedFiles = getModifiedFiles(hash);
     const finalAffectedPkgs = new Set();
 
     modifiedFiles.forEach(file => {
+      // git show 输出的文件路径相对于根目录
+      const absoluteFilePath = path.join(ROOT_DIR, file);
       targetPackages.forEach(pkg => {
-        if (file.startsWith(pkg.dir + path.sep) || file === pkg.dir) {
+        if (absoluteFilePath.startsWith(pkg.dir + path.sep) || absoluteFilePath === pkg.dir) {
           finalAffectedPkgs.add(pkg.name);
         }
       });
@@ -175,7 +190,6 @@ function run() {
     if (finalAffectedPkgs.size === 0) return;
 
     // 生成 Changeset 内容
-    // 优先级：强制指定 > BREAKING CHANGE > feat (minor) > others (patch)
     const bumpType = forceBumpType || ((msg.includes('BREAKING CHANGE') || parsed.type.includes('!')) ? 'major' : (parsed.type === 'feat' ? 'minor' : 'patch'));
     
     let changesetContent = '---\n';
@@ -187,7 +201,7 @@ function run() {
     const scope = parsed.scope || '';
     changesetContent += `${parsed.type} | ${scope} | ${parsed.summary} | ${shortHash}\n`;
 
-    const changesetPath = path.join(CHANGESET_DIR, `auto-${shortHash}.md`);
+    const changesetPath = path.join(changesetPathDir, `auto-${shortHash}.md`);
     fs.writeFileSync(changesetPath, changesetContent);
     console.log(`+ 已为提交 ${shortHash} 生成 Changeset: ${changesetPath}`);
     count++;
