@@ -28,7 +28,7 @@ const count = ref(0)
 
 <style scoped>
 /**
- * 读取文档样式
+ * 读取文档样式 - 验证多包changelog功能
  */
 .read-the-docs {
   color: #888;

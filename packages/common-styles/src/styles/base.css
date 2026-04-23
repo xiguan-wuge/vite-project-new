@@ -120,7 +120,7 @@ a:hover {
   clear: both;
 }
 /**
- * 超出部分省略号显示
+ * 超出部分省略号显示 - 验证多包changelog功能
  */
 .ellipsis {
   overflow: hidden;
